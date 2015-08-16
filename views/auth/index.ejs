@@ -1,0 +1,173 @@
+<!-- Default home page -->
+<link type="text/css" href='http://sailsjs.org/styles/fonts.css' rel='stylesheet'/>
+<script type="text/javascript">
+  setTimeout(function sunrise() {
+    document.getElementsByClassName('header')[0].style.backgroundColor = '#118798';
+  }, 0);
+</script>
+
+<div class="default-page">
+  <div class="header">
+    <h1 id="main-title" class="container"><%= __('Welcome to this Application') %></h1>
+    <h3 class="container">  <!-- You're looking at: <code><%= view.pathFromApp + '.' + view.ext %> --></code> --></h3> 
+
+  </div>
+  <div class="main container clearfix">
+     <h1>Getting started</h1>
+    <p>Don't worry, we've got your back.</p> -->
+
+     <div class="content"> 
+      
+         <h1>If you have already account click here to sign in</h1><a href="/"></a> 
+        <h1 id="main-title">Please sign in</h1> 
+     <!--  <a href="/auth/github/" class="btn">with GitHub</a> -->
+     <!--  <a href="/auth/facebook/" class="btn">with Facebook</a>  -->
+     <!-- <a href="/auth/google/" class="btn">with Google+</a> -->
+     
+        <a href="/gmail/" class="btn">With Gmail</a>
+        <a href="/imageProcess" class="btn">Process the image</a>
+     <!--  <a href="/auth/twitter/" class="btn">with Twitter</a> -->
+
+     <script src="https://apis.google.com/js/client.js?onload=handleClientLoad"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+    </div> 
+
+    <!-- <div class="links">
+      <h3>Links</h3>
+      <ul class="link-list">
+    
+        <h4>Docs</h4>
+        <a target="_blank" href="http://sailsjs.org/#/documentation/anatomy/myApp"><li>App Structure</li></a>
+        <a target="_blank" href="http://sailsjs.org/#/documentation/reference"><li>Reference</li></a>
+        <a target="_blank" href="http://sailsjs.org/#/documentation/concepts/extending-sails/Adapters/adapterList.html"><li>Supported Databases</li></a>
+    
+        <h4>Tutorials</h4>
+        <a target="_blank" href="http://links.sailsjs.org/community/sails101"><li>Sails 101</li></a>
+    
+        <h4>Community</h4>
+        <a target="_blank" href="http://stackoverflow.com/search?q=sails.js"><li>StackOverFlow</li></a>
+        <a target="_blank" href="https://github.com/balderdashy/sails"><li>GitHub</li></a>
+        <a target="_blank" href="https://groups.google.com/forum/#!forum/sailsjs"><li>Google Group</li></a>
+        <a target="_blank" href="http://webchat.freenode.net/"><li>IRC (#sailsjs on freenode)</li></a>
+    
+      </ul>
+    </div> -->
+  </div>
+</div>
+
+
+ //
+
+<!--
+ <html>
+  <head>
+    <script type="text/javascript">
+      // Your Client ID can be retrieved from your project in the Google
+      // Developer Console, https://console.developers.google.com
+      var CLIENT_ID = '604655303476-o611h84bj1pp46qi7dklheu7vom9df2b.apps.googleusercontent.com';
+
+      var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
+
+      /**
+       * Check if current user has authorized this application.
+       */
+      function checkAuth() {
+        gapi.auth.authorize(
+          {
+            'client_id': CLIENT_ID,
+            'scope': SCOPES,
+            'immediate': true
+          }, handleAuthResult);
+      }
+
+      /**
+       * Handle response from authorization server.
+       *
+       * @param {Object} authResult Authorization result.
+       */
+      function handleAuthResult(authResult) {
+        var authorizeDiv = document.getElementById('authorize-div');
+        if (authResult && !authResult.error) {
+          // Hide auth UI, then load client library.
+          authorizeDiv.style.display = 'none';
+          loadGmailApi();
+        } else {
+          // Show auth UI, allowing the user to initiate authorization by
+          // clicking authorize button.
+          authorizeDiv.style.display = 'inline';
+        }
+      }
+
+      /**
+       * Initiate auth flow in response to user clicking authorize button.
+       *
+       * @param {Event} event Button click event.
+       */
+      function handleAuthClick(event) {
+        gapi.auth.authorize(
+          {client_id: CLIENT_ID, scope: SCOPES, immediate: false},
+          handleAuthResult);
+        return false;
+      }
+
+      /**
+       * Load Gmail API client library. List labels once client library
+       * is loaded.
+       */
+      function loadGmailApi() {
+        gapi.client.load('gmail', 'v1', listLabels);
+      }
+
+      /**
+       * Print all Labels in the authorized user's inbox. If no labels
+       * are found an appropriate message is printed.
+       */
+      function listLabels() {
+        var request = gapi.client.gmail.users.labels.list({
+          'userId': 'me'
+        });
+
+        request.execute(function(resp) {
+          var labels = resp.labels;
+          appendPre('Labels:');
+
+          if (labels && labels.length > 0) {
+            for (i = 0; i < labels.length; i++) {
+              var label = labels[i];
+              appendPre(label.name)
+            }
+          } else {
+            appendPre('No Labels found.');
+          }
+        });
+      }
+
+      /**
+       * Append a pre element to the body containing the given message
+       * as its text node.
+       *
+       * @param {string} message Text to be placed in pre element.
+       */
+      function appendPre(message) {
+        var pre = document.getElementById('output');
+        var textContent = document.createTextNode(message + '\n');
+        pre.appendChild(textContent);
+      }
+
+    </script>
+    <script src="https://apis.google.com/js/client.js?onload=checkAuth">
+    </script>
+  </head>
+  <body>
+    <div id="authorize-div" style="display: none">
+      <span>Authorize access to Gmail API</span>
+      
+      <button id="authorize-button" onclick="handleAuthClick(event)">
+        Authorize
+      </button>
+    </div>
+    <pre id="output"></pre>
+  </body>
+</html>
+
+-->
