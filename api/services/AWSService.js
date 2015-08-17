@@ -1,8 +1,8 @@
 var fs = require('fs');
 var AWS = require('aws-sdk');
 
-var accessKeyId =  process.env.AWS_ACCESS_KEY || "AKIAJ3G6MF2UWPYSNI6Q";
-var secretAccessKey = process.env.AWS_SECRET_KEY || "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";
+var accessKeyId =  process.env.AWS_ACCESS_KEY;
+var secretAccessKey = process.env.AWS_SECRET_KEY;
 
 AWS.config.update({
     accessKeyId: accessKeyId,
