@@ -1,4 +1,6 @@
 
+
+
       var fs = require('fs');
       var el = require('email-existence');
       var readline = require('readline');
@@ -8,13 +10,27 @@
       var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
      /* var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
           process.env.USERPROFILE) + '/.credentials/';*/
-      var TOKEN_DIR = 'E:/Project/Authentication/.credentials/';
+      var TOKEN_DIR = '/home/kousik/Desktop/Authentication/';
       var TOKEN_PATH = TOKEN_DIR + 'gmail-api-AuthController.json';
      /* var json = require('json');*/
 
       var auth;       
       var oauth2Client;
+      //Microsoft outlook
+      var credentials = {
+          clientID: "b2ebd0f7-70f0-42fc-97e3-5527d2adeec5",
+          clientSecret: "24xD5jE46nfo9cUfiZ1c4L3",
+          site: "https://login.microsoftonline.com/common",
+          authorizationPath: "/oauth2/v2.0/authorize",
+          tokenPath: "/oauth2/v2.0/token"
+        }
+        var oauth2 = require("simple-oauth2")(credentials);
+        var redirectUri = "http://localhost:8000/authorize";
+        // The scopes the app requires
+        var scopes = [ "openid", "https://outlook.office.com/mail.read" ];
 
+
+      //
        module.exports = {
         upload: function (req, res) {
           sails.log.debug('req.body',req.body);
@@ -56,6 +72,8 @@
             }) 
       },
       
+
+
       checkEmail: function(req,res){
             sails.log.debug(req.body.email);
             el.check(req.body.email, function(err,data){
@@ -63,17 +81,96 @@
               res.json(data);
             });
       }, 
-       gmail: function (req, res) {
+
+      outlook: function(req, res){
+        // var credentials = {
+        //   clientID: "b2ebd0f7-70f0-42fc-97e3-5527d2adeec5",
+        //   clientSecret: "24xD5jE46nfo9cUfiZ1c4L3",
+        //   site: "https://login.microsoftonline.com/common",
+        //   authorizationPath: "/oauth2/v2.0/authorize",
+        //   tokenPath: "/oauth2/v2.0/token"
+        // }
+        // var oauth2 = require("simple-oauth2")(credentials);
+        // var redirectUri = "http://localhost:8000/authorize";
+        // // The scopes the app requires
+        // var scopes = [ "openid", "https://outlook.office.com/mail.read" ];
+        var returnVal= getAuthUrl();
+        function getAuthUrl() {
+          var returnVal = oauth2.authCode.authorizeURL({
+            redirect_uri: "http://localhost:8000/authorize",
+            scope: scopes.join(" ")
+          });
+          console.log("Generated auth url: " + returnVal);
+          return returnVal;
+        }
+        res.redirect(returnVal);
+
+      },
+
+      getTokenFromCode: function(req, res){
+        var auth_code= req.param('code');
+        console.log('==code==', auth_code);
+        // res.view('home/welcome');
+        getTokenFromCode(auth_code);
+        var accessTokenDetail;
+        var userDetail;
+        function getTokenFromCode(auth_code) {
+          var token;
+          oauth2.authCode.getToken({
+            code: auth_code,
+            redirect_uri: redirectUri,
+            scope: scopes.join(" ")
+            }, function (error, result) {
+              if (error) {
+                console.log("Access token error: ", error.message);
+              }
+              else {
+                token = oauth2.accessToken.create(result);
+                accessTokenDetail = token.token;
+                console.log("Token created: ", token.token);
+                // userDetail = getEmailFromIdToken(accessTokenDetail.id_token);
+                // callback(response, null, token);
+              }
+            });
+        }
+
+        function getEmailFromIdToken(id_token) {
+          // JWT is in three parts, separated by a '.'
+          var token_parts = id_token.split('.');
+          console.log('token_parts',token_parts);
+          // Token content is in the second part, in urlsafe base64
+          var encoded_token1 = new Buffer(token_parts[0].replace("-", "_").replace("+", "/"), 'base64');
+          var encoded_token2 = new Buffer(token_parts[1].replace("-", "_").replace("+", "/"), 'base64');
+          // var encoded_token3 = new Buffer(token_parts[2].replace("-", "_").replace("+", "/"), 'base64');
+          var decoded_token1 = encoded_token1.toString();
+          var decoded_token2 = encoded_token2.toString();
+          // var decoded_token3 = encoded_token3.toString();
+          var jwt1 = JSON.parse(decoded_token1);
+          var jwt2 = JSON.parse(decoded_token2);
+          // var jwt3 = JSON.parse(decoded_token3);
+          // Email is in the preferred_username field
+          console.log('userDetail1',jwt1);
+           console.log('userDetail2',jwt2);
+            // console.log('userDetail3',jwt3);
+          return jwt2;
+        }
+        res.view('home/welcome');
+        // console.log('token',token);
+      },
+
+      gmail: function (req, res) {
                   sails.log.debug('loading..');
                   var fs = require('fs');
                   var readline = require('readline');
                   var google = require('googleapis');
                   var googleAuth = require('google-auth-library');
 
-                  var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/plus.login'];
+                  //var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly', 'https://www.googleapis.com/auth/plus.login','https://www.googleapis.com/auth/userinfo.email'];
+                   var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/userinfo.profile' ,'https://www.googleapis.com/auth/userinfo.email'];
+                 //var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
                  /* var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
                       process.env.USERPROFILE) + '/.credentials/';*/
-                  var TOKEN_DIR = 'E:/Project/Authentication/.credentials/';
+                  var TOKEN_DIR = '/home/kousik/Desktop/Authentication/';
                   var TOKEN_PATH = TOKEN_DIR + 'gmail-api-AuthController.json';
 
                   // Load client secrets from a local file.
@@ -85,7 +182,7 @@
                     // Authorize a client with the loaded credentials, then call the
                     // Gmail API.
                     //authorize(JSON.parse(content), listLabels);
-                    authorize(JSON.parse(content), listMessages);
+                    authorize(JSON.parse(content), authorizeCallback);
                      //authorize(JSON.parse(content), getMessage);
                    
                   });
@@ -100,22 +197,23 @@
                   function authorize(credentials, callback) {
                     var clientSecret = credentials.installed.client_secret;
                     var clientId = credentials.installed.client_id;
-                    var redirectUrl = credentials.installed.redirect_uris[1]+':1337/authComplete';
+                    var redirectUrl = credentials.installed.redirect_uris[1]+':8000/authComplete';
+                    // var redirectUrl = 'http://testhire.klimb.io/';
                      auth = new googleAuth();
                     oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
                     // Check if we have previously stored a token.
-                    fs.readFile(TOKEN_PATH, function(err, token) {
+                    // fs.readFile(TOKEN_PATH, function(err, token) {
 
-                      if (err) {
-                        sails.log.debug('TOKEN_PATH=>>',err);
+                    //   if (err) {
+                    //     sails.log.debug('TOKEN_PATH=>>',err);
                         getNewToken(oauth2Client, callback);
-                      } else {
-                        sails.log.debug(token);
-                        oauth2Client.credentials = JSON.parse(token);
-                        callback(oauth2Client);
-                      }
-                    });
+                    //   } else {
+                    //     sails.log.debug(token);
+                    //     oauth2Client.credentials = JSON.parse(token);
+                    //     callback(oauth2Client);
+                    //   }
+                    // });
                   }
 
                   /**
@@ -137,81 +235,7 @@
                     
                   }
 
-                   function listMessages(auth, res) {
-                          var gmail = google.gmail('v1');
-                          gmail.users.messages.list({
-                            auth: auth,
-                            userId: 'me',
-                          }, function(err, response) {
-                            if (err) {
-                              console.log('The API returned an error: ' + err);
-                              return;
-                            }
-                            var messages = response.messages;
-                             //console.log(response);
-                            if (messages.length == 0) {
-                              console.log('No messages found.');
-                            } else {
-                              var arr= [];
-                              var msgList =[];
-                              var attachmentList= []
-                              var count =0;
-                              console.log("Query returned"+ messages.length + "Messages");
-                                var msgLength = messages.length;
-
-                                  for (var i = 0; i < messages.length; i++) {
-                                    var message = messages[i];
-                                    var messageId=  messages[i].id;
-                                    arr.push(message);
-                                   
-
-
-                                      (function (messageId) {
-                                      var gmail = google.gmail('v1');
-                                     
-                                      gmail.users.messages.get({
-                                        auth: auth,
-                                        userId:'me',
-                                        'id': messageId,
-                                      }, function(err, response){
-                                        if (err) {
-                                          console.log('The API returned an error: ' + err);
-                                          return;
-                                        }
-                                           
-                                          var parts = response.payload.parts;
-                                            _.each(parts, function (part) {
-                                               (function (part) {
-                                              if (part.filename && part.filename.length > 0) {
-                                              var attachId = part.body.attachmentId;
-
-                                              console.log("attachId = ",attachId ,'<br>');
-                                               attachmentList.push(attachId);
-                                               }
-                                               })(part)
-                                               count = count+1;
-                                               if (count >=  40) {
-                     
-                                               /* res.json(attachmentList);*/
-                                            
-                                              console.log("res.json=> ",attachmentList);
-                                              } 
-                                            });
-                                        
-                                         
-                                      });
-                                      
-                                    })(messageId);
-                                    
-                                    
-                                             
-
-                                }
-                                
-
-                              }
-                          });
-                    }
+                   function authorizeCallback() {}
 
            } ,      
 		
@@ -222,19 +246,17 @@
 
             console.log('code',code);
 
-                  
-
                   var fs = require('fs');
                   var readline = require('readline');
                   var google = require('googleapis');
                   var googleAuth = require('google-auth-library');
 
-                  var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly','https://www.googleapis.com/auth/plus.login'];
+                  var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
                  /* var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
                       process.env.USERPROFILE) + '/.credentials/';*/
-                  var TOKEN_DIR = 'E:/Project/Authentication/.credentials/';
+                  var TOKEN_DIR = '/home/kousik/Desktop/Authentication/';
                   var TOKEN_PATH = TOKEN_DIR + 'gmail-api-AuthController.json';
-                  var ATTACH_DIR = 'E:/Project/Authentication/.credentials/';
+                  var ATTACH_DIR = '/home/kousik/Desktop/Authentication/';
                   var ATTACH_PATH = ATTACH_DIR + 'gmail-api-AttachIdfile.json';
                   // Load client secrets from a local file.
                   fs.readFile('client_secret.json', function processClientSecrets(err, content) {
@@ -245,7 +267,7 @@
                     // Authorize a client with the loaded credentials, then call the
                     // Gmail API.
                     /*authorize(JSON.parse(content), listLabels);*/
-                    authorize(JSON.parse(content), listMessages);
+                    authorize(JSON.parse(content), authorizeCallback);
                      /*authorize(JSON.parse(content), getMessage);*/
                     /*authorize(JSON.parse(content), getMessage);*/
                   });
@@ -260,19 +282,20 @@
                   function authorize(credentials, callback) {
                     var clientSecret = credentials.installed.client_secret;
                     var clientId = credentials.installed.client_id;
-                    var redirectUrl = credentials.installed.redirect_uris[1]+':1337/authComplete';
+                    var redirectUrl = credentials.installed.redirect_uris[1]+':8000/authComplete';
+                    // var redirectUrl = 'http://testhire.klimb.io/';
                     var auth = new googleAuth();
                     var oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
 
                     // Check if we have previously stored a token.
-                    fs.readFile(TOKEN_PATH, function(err, token) {
-                      if (err) {
+                    // fs.readFile(TOKEN_PATH, function(err, token) {
+                    //   if (err) {
                         getNewToken(oauth2Client, callback);
-                      } else {
-                        oauth2Client.credentials = JSON.parse(token);
-                        callback(oauth2Client);
-                      }
-                    });
+                    //   } else {
+                    //     oauth2Client.credentials = JSON.parse(token);
+                    //     callback(oauth2Client);
+                    //   }
+                    // });
                   }
 
                   /**
@@ -296,24 +319,23 @@
                           return;
                         }
                         oauth2Client.credentials = token;
+                        console.log('token',token);
+                        res.redirect('http://localhost:1337/');
 
-
-                        storeToken(token);
-                       fs.readFile('client_secret.json', function processClientSecrets(err, content) {
-                    if (err) {
-                      console.log('Error loading client secret file: ' + err);
-                      return;
-                    }
+                        // storeToken(token);
+                    //    fs.readFile('client_secret.json', function processClientSecrets(err, content) {
+                    // if (err) {
+                    //   console.log('Error loading client secret file: ' + err);
+                    //   return;
+                    // }
                     // Authorize a client with the loaded credentials, then call the
                     // Gmail API.
                     /*authorize(JSON.parse(content), listLabels);*/
-                    authorize(JSON.parse(content), listMessages);
+                    // authorize(JSON.parse(content), listMessages);
                      /*authorize(JSON.parse(content), getMessage);*/
                     /*authorize(JSON.parse(content), getMessage);*/
-                  });
+                  // });
 
-                       
-                       
                       });
                       
                      
@@ -326,92 +348,20 @@
                    * @param {Object} token The token to store to disk.
                    */
 
-                  function storeToken(token) {
-                    try {
-                      fs.mkdirSync(TOKEN_DIR);
-                    } catch (err) {
-                      if (err.code != 'EEXIST') {
-                        throw err;
-                      }
-                    }
-                    fs.writeFile(TOKEN_PATH, JSON.stringify(token));
-                    console.log('Token stored to ' + TOKEN_PATH);
-                  }
+                  // function storeToken(token) {
+                  //   try {
+                  //     fs.mkdirSync(TOKEN_DIR);
+                  //   } catch (err) {
+                  //     if (err.code != 'EEXIST') {
+                  //       throw err;
+                  //     }
+                  //   }
+                  //   fs.writeFile(TOKEN_PATH, JSON.stringify(token));
+                  //   console.log('Token stored to ' + TOKEN_PATH);
+                  // }
 
 
-                    function listMessages(auth, res) {
-                          var gmail = google.gmail('v1');
-                          gmail.users.messages.list({
-                            auth: auth,
-                            userId: 'me',
-                          }, function(err, response) {
-                            if (err) {
-                              console.log('The API returned an error: ' + err);
-                              return;
-                            }
-                            var messages = response.messages;
-                             //console.log(response);
-                            if (messages.length == 0) {
-                              console.log('No messages found.');
-                            } else {
-                              var arr= [];
-                              var msgList =[];
-                              var attachmentList= []
-                              var count =0;
-                              console.log("Query returned"+ messages.length + "Messages");
-                                var msgLength = messages.length;
-
-                                  for (var i = 0; i < messages.length; i++) {
-                                    var message = messages[i];
-                                    var messageId=  messages[i].id;
-                                    arr.push(message);
-                                   
-
-
-                                      (function (messageId) {
-                                      var gmail = google.gmail('v1');
-                                     
-                                      gmail.users.messages.get({
-                                        auth: auth,
-                                        userId:'me',
-                                        'id': messageId,
-                                      }, function(err, response){
-                                        if (err) {
-                                          console.log('The API returned an error: ' + err);
-                                          return;
-                                        }
-                                           
-                                          var parts = response.payload.parts;
-                                            _.each(parts, function (part) {
-                                               (function (part) {
-                                              if (part.filename && part.filename.length > 0) {
-                                              var attachId = part.body.attachmentId;
-
-                                              console.log("attachId = ",attachId ,'<br>');
-                                               attachmentList.push(attachId);
-                                               }
-                                               })(part)
-                                               count = count+1;
-                                               if (count >=  40) {
-                                                res.json(attachmentList);                                            
-                                              console.log("res.json=> ",attachmentList);
-                                              } 
-                                            });
-                                        
-                                         
-                                      });
-                                      
-                                    })(messageId);
-                                    
-                                    
-                                             
-
-                                }
-                                
-
-                              }
-                          });
-                    } 
+                    function authorizeCallback() {} 
 
 
 
@@ -421,6 +371,6 @@
 
 
 };
-
+//https://www.googleapis.com/oauth2/v3/token?code='4/-f_cYYRpw_U654kvGqpEA-qML-fDLG_6XUDDQk90V1Q'&client_id='885125723746-1vgi4mq3sbu62h55l5ouu85l0ev6opmp.apps.googleusercontent.com'&client_secret='qCxQUmIXQtNaPQwMfdQBd3Rj'&grant_type=authorization_code
 
           

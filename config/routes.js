@@ -41,6 +41,12 @@ module.exports.routes = {
     view        :'auth/index'
   },
 
+  // '/authorize':{
+  //   view          : 'home/welcome',
+  //   controller : 'AuthController',
+  //   action     : 'getTokenFromCode'
+  // },
+
   // '/login' : {
   //   controller : 'AuthController',
   //   action     : 'index'
@@ -48,7 +54,8 @@ module.exports.routes = {
   // },
   // '/gmail'       :'AuthController.gmail',
   // '/imageProcess':'AuthController.imageProcess'
-
+  '/outlook'          :'AuthController.outlook',
+  '/authorize'        :'AuthController.getTokenFromCode',
   '/gmail'            :'AuthController.gmail',
   'POST /upload'      :'AuthController.upload',
   'POST /user'        :'AuthController.add',
@@ -66,7 +73,7 @@ module.exports.routes = {
   //   action     : 'logout'
   // },
 
-  // '/authComplete' : 'AuthController.authComplete'
+  '/authComplete' : 'AuthController.authComplete'
 
   /***************************************************************************
   *                                                                          *
