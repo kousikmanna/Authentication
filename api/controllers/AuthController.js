@@ -18,8 +18,8 @@
       var oauth2Client;
       //Microsoft outlook
       var credentials = {
-          clientID: "b2ebd0f7-70f0-42fc-97e3-5527d2adeec5",
-          clientSecret: "24xD5jE46nfo9cUfiZ1c4L3",
+          clientID: "",
+          clientSecret: "",
           site: "https://login.microsoftonline.com/common",
           authorizationPath: "/oauth2/v2.0/authorize",
           tokenPath: "/oauth2/v2.0/token"
@@ -83,17 +83,6 @@
       }, 
 
       outlook: function(req, res){
-        // var credentials = {
-        //   clientID: "b2ebd0f7-70f0-42fc-97e3-5527d2adeec5",
-        //   clientSecret: "24xD5jE46nfo9cUfiZ1c4L3",
-        //   site: "https://login.microsoftonline.com/common",
-        //   authorizationPath: "/oauth2/v2.0/authorize",
-        //   tokenPath: "/oauth2/v2.0/token"
-        // }
-        // var oauth2 = require("simple-oauth2")(credentials);
-        // var redirectUri = "http://localhost:8000/authorize";
-        // // The scopes the app requires
-        // var scopes = [ "openid", "https://outlook.office.com/mail.read" ];
         var returnVal= getAuthUrl();
         function getAuthUrl() {
           var returnVal = oauth2.authCode.authorizeURL({
